@@ -1,0 +1,25 @@
+
+model Project {
+  id                String          @id @default(uuid())
+  name              String
+  title             String
+  description       String
+  technology        String
+  liveSiteUrl       String?
+  githubFrontendUrl String?
+  githubBackendUrl  String?
+  category          Category
+  isFavorite        Boolean         @default(false)
+  serialNo          Int?
+  isActive          Boolean         @default(true)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  images            String[]  // RELATION
+}
+
+
+enum Category {
+  LEARNING
+  LIVE
+}

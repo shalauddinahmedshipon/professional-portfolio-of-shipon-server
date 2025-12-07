@@ -9,6 +9,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { SeederService } from './seeder/seeder.service';
 import { ProfileModule } from './module/profile/profile.module';
 import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
+import { ProjectModule } from './module/project/project.module';
 
 
 
@@ -31,7 +32,8 @@ import { CloudinaryModule } from './common/cloudinary/cloudinary.module';
     AuthModule,
     UserModule,
     ProfileModule,
-    CloudinaryModule
+    CloudinaryModule,
+    ProjectModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
