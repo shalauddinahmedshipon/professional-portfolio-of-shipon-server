@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsOptional, IsNumber, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateEducationDto {
   @ApiProperty({ example: 'SSC' })
@@ -18,6 +18,7 @@ export class CreateEducationDto {
 
   @ApiProperty({ example: 4.9 })
   @IsOptional()
+  @IsNumber()
   gpa?: number;
 
   @ApiProperty({ example: 'Dhaka College' })
@@ -29,8 +30,12 @@ export class CreateEducationDto {
   @IsString()
   status?: string;
 
-  @ApiProperty({ example: 'https://link-to-icon.com/icon.png', required: false })
-  @IsOptional()
-  @IsUrl()
-  icon?: string;
+  // 👇 icon comes from file upload
+  @ApiProperty({
+    type: 'string',
+    format: 'binary',
+    required: false,
+    description: 'Institution icon',
+  })
+  icon?: any;
 }
