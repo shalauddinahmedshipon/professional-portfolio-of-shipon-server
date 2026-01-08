@@ -1,0 +1,12 @@
+model Education {
+  id        String   @id @default(uuid())
+  level     String   // SSC, HSC, BSc, etc.
+  institution String // School, College, University name
+  field     String?  // Science, Mathematics, etc.
+  year      Int?     // Graduation year
+  gpa       Float?   // Optional
+  status    String?  // e.g., Completed, Incomplete
+  icon      String?  // URL of school/university icon
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
