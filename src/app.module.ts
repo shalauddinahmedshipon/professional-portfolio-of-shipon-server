@@ -17,6 +17,7 @@ import { SkillModule } from './module/skill/skill.module';
 import { EducationModule } from './module/education/education.module';
 import { ExperienceModule } from './module/experience/experience.module';
 import { AchievementModule } from './module/achievement/achievement.module';
+import { ContactModule } from './module/contact/contact.module';
 
 
 
@@ -47,7 +48,8 @@ import { AchievementModule } from './module/achievement/achievement.module';
     SkillModule,
     EducationModule,
     ExperienceModule,
-    AchievementModule
+    AchievementModule,
+    ContactModule
   ],
   controllers: [AppController],
   providers: [AppService, SeederService],
