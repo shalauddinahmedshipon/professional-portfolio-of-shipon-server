@@ -1,0 +1,12 @@
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String   // Short headline of the achievement
+  description String?  // Optional details about the achievement
+  category    String?  // e.g., COMPETITIVE_PROGRAMMING, CERTIFICATION, HACKATHON, OPEN_SOURCE
+  iconUrl     String?  // Uploaded icon (SVG/PNG)
+  proofUrl    String?  // Optional proof, e.g., certificate, URL
+  achievedAt  DateTime? // Optional date of achievement
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
