@@ -7,13 +7,17 @@ import {
   HttpStatus,
   UseInterceptors,
   UploadedFiles,
+  UploadedFile,
+  Post,
+  Param,
+  Delete,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { Response } from 'express';
 import { ApiTags, ApiOperation, ApiResponse, ApiConsumes, ApiBody } from '@nestjs/swagger';
-import { FileFieldsInterceptor } from '@nestjs/platform-express';
+import { FileFieldsInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import sendResponse from '../utils/sendResponse';
-import { UpdateContactInfoDto, UpdateProfileDto } from './dto/profile.dto';
+import { CreateCodingProfileDto, UpdateCodingProfileDto, UpdateContactInfoDto, UpdateProfileDto } from './dto/profile.dto';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 
 @ApiTags('Profile')
@@ -105,7 +109,138 @@ async updateContactInfo(
   });
 }
 
+@Post('coding-profiles')
+@UseInterceptors(FileInterceptor('icon'))
+@ApiConsumes('multipart/form-data')
+@ApiOperation({ summary: 'Create coding profile with platform icon' })
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      platform: { type: 'string', example: 'Codeforces' },
+      username: { type: 'string', example: 'tourist' },
+      profileUrl: { type: 'string', example: 'https://codeforces.com/profile/tourist' },
+      rating: { type: 'number', example: 1600 },
+      badge: { type: 'string', example: 'Expert' },
+      highlight: { type: 'boolean', example: true },
+      icon: { type: 'string', format: 'binary' },
+    },
+  },
+})
+@ApiResponse({ status: 201, description: 'Coding profile created successfully' })
+async createCodingProfile(
+  @Body() dto: CreateCodingProfileDto,
+  @UploadedFile() icon: Express.Multer.File,
+  @Res() res: Response,
+) {
+  if (icon) {
+    dto['iconUrl'] = await this.cloudinaryService.uploadImage(
+      icon,
+      'coding-platform-icons',
+    );
+  }
 
+  const data = await this.profileService.createCodingProfile(dto);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.CREATED,
+    success: true,
+    message: 'Coding profile created successfully',
+    data,
+  });
+}
+
+@Get('coding-profiles')
+@ApiOperation({ summary: 'Get all coding profiles' })
+@ApiResponse({ status: 200, description: 'Coding profiles fetched successfully' })
+async getAllCodingProfiles(@Res() res: Response) {
+  const data = await this.profileService.getAllCodingProfiles();
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Coding profiles fetched successfully',
+    data,
+  });
+}
+
+
+@Get('coding-profiles/:id')
+@ApiOperation({ summary: 'Get single coding profile' })
+@ApiResponse({ status: 200, description: 'Coding profile fetched successfully' })
+async getSingleCodingProfile(
+  @Param('id') id: string,
+  @Res() res: Response,
+) {
+  const data = await this.profileService.getSingleCodingProfile(id);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Coding profile fetched successfully',
+    data,
+  });
+}
+
+@Patch('coding-profiles/:id')
+@UseInterceptors(FileInterceptor('icon'))
+@ApiConsumes('multipart/form-data')
+@ApiOperation({ summary: 'Update coding profile' })
+@ApiBody({
+  schema: {
+    type: 'object',
+    properties: {
+      platform: { type: 'string' },
+      username: { type: 'string' },
+      profileUrl: { type: 'string' },
+      rating: { type: 'number' },
+      badge: { type: 'string' },
+      highlight: { type: 'boolean' },
+      icon: { type: 'string', format: 'binary' },
+    },
+  },
+})
+@ApiResponse({ status: 200, description: 'Coding profile updated successfully' })
+async updateCodingProfile(
+  @Param('id') id: string,
+  @Body() dto: UpdateCodingProfileDto,
+  @UploadedFile() icon: Express.Multer.File,
+  @Res() res: Response,
+) {
+  if (icon) {
+    dto['iconUrl'] = await this.cloudinaryService.uploadImage(
+      icon,
+      'coding-platform-icons',
+    );
+  }
+
+  const data = await this.profileService.updateCodingProfile(id, dto);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Coding profile updated successfully',
+    data,
+  });
+}
+
+
+@Delete('coding-profiles/:id')
+@ApiOperation({ summary: 'Delete coding profile' })
+@ApiResponse({ status: 200, description: 'Coding profile deleted successfully' })
+async deleteCodingProfile(
+  @Param('id') id: string,
+  @Res() res: Response,
+) {
+  const data = await this.profileService.deleteCodingProfile(id);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Coding profile deleted successfully',
+    data,
+  });
+}
 
 
 }

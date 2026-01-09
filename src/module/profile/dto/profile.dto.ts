@@ -1,6 +1,7 @@
 import { IsBoolean, IsInt, IsOptional, IsString, IsUrl } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { IsEmail } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 
 
@@ -126,6 +127,9 @@ export class CreateCodingProfileDto {
     description: 'Current rating',
   })
   @IsOptional()
+  @Transform(({ value }) =>
+    value !== undefined ? Number(value) : value,
+  )
   @IsInt()
   rating?: number;
 
@@ -140,6 +144,15 @@ export class CreateCodingProfileDto {
     example: true,
   })
   @IsOptional()
+  @Transform(({ value }) => value === 'true' || value === true)
   @IsBoolean()
   highlight?: boolean;
 }
+
+
+/* ---------------------------------------------
+   UPDATE CODING PROFILE DTO
+--------------------------------------------- */
+export class UpdateCodingProfileDto extends PartialType(
+  CreateCodingProfileDto,
+) {}

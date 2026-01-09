@@ -30,6 +30,7 @@ export class ProfileService {
     return profile;
   }
 
+    //contact Info
   async updateContactInfo(dto: UpdateContactInfoDto) {
   return this.prisma.contactInfo.upsert({
     where: { profileId: 'main-profile' },
@@ -42,5 +43,55 @@ export class ProfileService {
     },
   });
 }
+
+
+
+
+
+
+/* ---------------- CODING PROFILE ---------------- */
+
+  async createCodingProfile(dto: any) {
+    return this.prisma.codingProfile.create({
+      data: {
+        ...dto,
+        profileId: 'main-profile',
+      },
+    });
+  }
+
+  async getAllCodingProfiles() {
+    return this.prisma.codingProfile.findMany({
+      where: { profileId: 'main-profile' },
+      orderBy: { highlight: 'desc' },
+    });
+  }
+
+  async getSingleCodingProfile(id: string) {
+    return this.prisma.codingProfile.findUnique({
+      where: { id },
+    });
+  }
+
+  async updateCodingProfile(id: string, dto: any) {
+    return this.prisma.codingProfile.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async deleteCodingProfile(id: string) {
+    return this.prisma.codingProfile.delete({
+      where: { id },
+    });
+  }
+
+
+
+
+
+
+
+
 
 }
