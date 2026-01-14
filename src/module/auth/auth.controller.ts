@@ -1,4 +1,4 @@
-import { Body, Controller, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, HttpStatus, Patch, Post, Req, Res } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import sendResponse from '../utils/sendResponse';
@@ -23,19 +23,31 @@ export class AuthController {
 
 
 
+// auth.controller.ts
+@Public()
+@Post('login')
+async login(
+  @Body() dto: LoginDto,
+  @Res({ passthrough: true }) res: Response,
+) {
+  const { user, accessToken } = await this.authService.login(dto);
 
-  // login 
-  @Public()
-  @Post('login')
-  async login(@Body() dto: LoginDto, @Res() res: Response) {
-    const result = await this.authService.login(dto);
-    return sendResponse(res, {
-      statusCode: HttpStatus.OK,
-      success: true,
-      message: 'Login successful',
-      data: result,
-    });
-  }
+  res.cookie('access_token', accessToken, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    path: '/',
+  });
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Login successful',
+    data: { user }, 
+  });
+}
+
 
 
 
@@ -108,6 +120,34 @@ export class AuthController {
       data: result,
     });
   }
+
+@Post('logout')
+logout(@Res({ passthrough: true }) res: Response) {
+  res.clearCookie('access_token', {
+    path: '/',
+  });
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Logout successful',
+    data: null,
+  });
+}
+
+
+@ApiOperation({ summary: 'Get current authenticated user' })
+@Get('me')
+async getMe(@Req() req: Request) {
+  const user = await this.authService.getMe(req.user!.id);
+
+  if (!user || !user.isActive) {
+    throw new ForbiddenException('User is inactive');
+  }
+
+  return user;
+}
+
 
 
 }

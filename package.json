@@ -19,8 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
-     "prisma": {
-    "schema": "./prisma/schema"  
+  "prisma": {
+    "schema": "./prisma/schema"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "^2.0.2",
@@ -39,6 +39,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.2",
     "cloudinary": "^1.41.3",
+    "cookie-parser": "^1.4.7",
     "date-fns": "^4.1.0",
     "multer": "^2.0.1",
     "multer-storage-cloudinary": "^4.0.0",

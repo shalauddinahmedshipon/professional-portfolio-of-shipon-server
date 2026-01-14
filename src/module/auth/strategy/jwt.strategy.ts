@@ -8,15 +8,42 @@ export type JwtPayload = {
   role: string;
 };
 
+// @Injectable()
+// export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+//   constructor() {
+//     super({
+//       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+//       secretOrKey: process.env.ACCESS_TOKEN_SECRET as string,
+//       ignoreExpiration:false
+//     });
+//   }
+//   async validate(payload: JwtPayload) {
+//     return payload;
+//   }
+// }
+
+
+import { Request } from "express";
+
+const cookieExtractor = (req: Request): string | null => {
+  if (req && req.cookies) {
+    return req.cookies["access_token"] ?? null;
+  }
+  return null;
+};
+
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
+export class JwtStrategy extends PassportStrategy(Strategy, "jwt") {
   constructor() {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        cookieExtractor, // 🔥 ADD THIS
+      ]),
       secretOrKey: process.env.ACCESS_TOKEN_SECRET as string,
-      ignoreExpiration:false
+      ignoreExpiration: false,
     });
   }
+
   async validate(payload: JwtPayload) {
     return payload;
   }

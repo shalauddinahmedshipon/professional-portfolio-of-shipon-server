@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './module/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './module/user/user.module';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { SeederService } from './seeder/seeder.service';
 import { ProfileModule } from './module/profile/profile.module';
@@ -38,7 +37,6 @@ import { ContactModule } from './module/contact/contact.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     AuthModule,
-    UserModule,
     ProfileModule,
     CloudinaryModule,
     ProjectModule,

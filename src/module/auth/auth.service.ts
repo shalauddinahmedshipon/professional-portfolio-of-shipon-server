@@ -46,9 +46,23 @@ export class AuthService {
       throw new ForbiddenException('Invalid credentials');
     }
 
-    const tokens = await getTokens(this.jwtService,user.id, user.email, user.role);
-    return { user, ...tokens };
+    const {accessToken} = await getTokens(this.jwtService,user.id, user.email, user.role);
+    return { user, accessToken };
   }
+
+  
+  async getMe(userId: string) {
+  return this.prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      role: true,
+      isActive: true,
+    },
+  });
+}
 
 
 
