@@ -56,6 +56,18 @@ export class GalleryController {
     });
   }
 
+@Public()
+@Post('editor-image')
+@UseInterceptors(FileInterceptor('files'))
+async uploadEditorImage(@UploadedFile() file: Express.Multer.File) {
+  const imageUrl = await this.cloudinaryService.uploadImage(file)
+
+  return {
+    files: [imageUrl], 
+  }
+}
+
+
   // ---------- GET ALL (PAGINATION) ----------
   @Get()
   @Public()
