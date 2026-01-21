@@ -21,11 +21,17 @@ export class GetEventsQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
-    enum: ['CONFERENCE', 'WORKSHOP', 'MEETUP', 'WEBINAR','CONTEST','HACKATHON'],
+    enum: ['CONFERENCE', 'WORKSHOP', 'MEETUP', 'WEBINAR', 'CONTEST', 'HACKATHON'],
   })
   @IsOptional()
-  @IsEnum(['CONFERENCE', 'WORKSHOP', 'MEETUP', 'WEBINAR','CONTEST','HACKATHON'])
-  eventType?: 'CONFERENCE' | 'WORKSHOP' | 'MEETUP' | 'WEBINAR'|'CONTEST'|'HACKATHON';
+  @IsEnum(['CONFERENCE', 'WORKSHOP', 'MEETUP', 'WEBINAR', 'CONTEST', 'HACKATHON'])
+  eventType?:
+    | 'CONFERENCE'
+    | 'WORKSHOP'
+    | 'MEETUP'
+    | 'WEBINAR'
+    | 'CONTEST'
+    | 'HACKATHON';
 
   @ApiPropertyOptional({ example: true })
   @IsOptional()

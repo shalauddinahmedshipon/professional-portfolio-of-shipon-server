@@ -90,7 +90,6 @@ async update(
       isFavorite: dto.isFavorite,
       isActive: dto.isActive,
       images: imagesToSave,
-      // ❌ serialNo NEVER updated
     },
   });
 }

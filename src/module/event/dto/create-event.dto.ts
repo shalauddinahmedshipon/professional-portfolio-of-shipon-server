@@ -1,8 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateEventDto {
-  @ApiProperty({ example: 1 })
-  serialNo: number;
 
   @ApiProperty({ example: 'NestJS Conference' })
   name: string;
@@ -26,10 +24,5 @@ export class CreateEventDto {
   })
   eventType: 'CONFERENCE' | 'WORKSHOP' | 'MEETUP' | 'WEBINAR'|'CONTEST'|'HACKATHON';
 
-  @ApiProperty({
-    type: 'array',
-    items: { type: 'string', format: 'binary' },
-    description: 'Upload multiple event images',
-  })
-  images: any[];
+ 
 }

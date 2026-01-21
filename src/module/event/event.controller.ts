@@ -13,7 +13,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiConsumes, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { EventService } from './event.service';
@@ -50,14 +50,15 @@ export class EventController {
       : [];
 
     const dto: CreateEventDto = {
-      ...body,
-      serialNo: Number(body.serialNo),
+      name: body.name,
+      title: body.title,
+      description: body.description,
+      location: body.location,
       eventDate: new Date(body.eventDate),
       eventType: body.eventType,
-      images: uploadedUrls,
     };
 
-    const event = await this.eventService.create(dto);
+    const event = await this.eventService.create(dto, uploadedUrls);
 
     return sendResponse(res, {
       statusCode: HttpStatus.CREATED,
@@ -87,7 +88,6 @@ export class EventController {
 
     const dto: UpdateEventDto = {
       ...body,
-      serialNo: body.serialNo ? Number(body.serialNo) : undefined,
       eventDate: body.eventDate ? new Date(body.eventDate) : undefined,
       isActive: body.isActive === 'true' || body.isActive === true,
     };

@@ -1,4 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { CreateEventDto } from './dto/create-event.dto';
@@ -12,24 +15,20 @@ export class EventService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  // ---------- CREATE ----------
-  async create(dto: CreateEventDto) {
-    // Check duplicate serialNo
-    if (dto.serialNo !== undefined) {
-      const exists = await this.prisma.event.findUnique({
-        where: { serialNo: dto.serialNo },
-      });
-      if (exists) {
-        throw new BadRequestException(
-          `Event with serialNo ${dto.serialNo} already exists`,
-        );
-      }
-    }
+  // ---------- CREATE (AUTO serialNo) ----------
+  async create(dto: CreateEventDto, images: string[]) {
+    const last = await this.prisma.event.findFirst({
+      orderBy: { serialNo: 'desc' },
+      select: { serialNo: true },
+    });
+
+    const nextSerial = last ? last.serialNo! + 1 : 1;
 
     return this.prisma.event.create({
       data: {
         ...dto,
-        images: dto.images || [],
+        serialNo: nextSerial,
+        images,
       },
     });
   }
@@ -39,31 +38,34 @@ export class EventService {
     const existing = await this.prisma.event.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Event not found');
 
-    // Check duplicate serialNo if updating
-    if (dto.serialNo !== undefined && dto.serialNo !== existing.serialNo) {
-      const serialExists = await this.prisma.event.findUnique({
-        where: { serialNo: dto.serialNo },
-      });
-      if (serialExists) {
-        throw new BadRequestException(
-          `Event with serialNo ${dto.serialNo} already exists`,
-        );
-      }
-    }
+    let imagesToSave = [...(existing.images || [])];
 
-    // Replace images if new uploaded
-    if (newImages.length > 0) {
-      for (const url of existing.images || []) {
+    // REMOVE SELECTED OLD IMAGES
+    if (dto.removedImages?.length) {
+      for (const url of dto.removedImages) {
         await this.cloudinaryService.deleteImageByUrl(url);
       }
-      dto.images = newImages;
+      imagesToSave = imagesToSave.filter(
+        (img) => !dto.removedImages!.includes(img),
+      );
+    }
+
+    // ADD NEW IMAGES
+    if (newImages.length > 0) {
+      imagesToSave.push(...newImages);
     }
 
     return this.prisma.event.update({
       where: { id },
       data: {
-        ...dto,
-        ...(dto.images ? { images: dto.images } : {}),
+        name: dto.name,
+        title: dto.title,
+        description: dto.description,
+        location: dto.location,
+        eventDate: dto.eventDate,
+        eventType: dto.eventType,
+        isActive: dto.isActive,
+        images: imagesToSave,
       },
     });
   }
@@ -80,7 +82,7 @@ export class EventService {
     return this.prisma.event.delete({ where: { id } });
   }
 
-  // ---------- GET ALL ----------
+  // ---------- GET ALL (TIME-BASED ORDER) ----------
   async getAllEvents(query: GetEventsQueryDto) {
     const { page = 1, limit = 10, search, eventType, isActive } = query;
     const skip = (page - 1) * limit;
@@ -104,17 +106,19 @@ export class EventService {
         where,
         skip,
         take: limit,
-        orderBy: { eventDate: 'desc' },
+        orderBy: { eventDate: 'desc' }, // ✅ TIME-BASED
       }),
       this.prisma.event.count({ where }),
     ]);
 
     return {
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
       data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     };
   }
 
