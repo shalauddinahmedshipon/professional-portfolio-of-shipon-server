@@ -1,8 +1,9 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsArray, IsUUID } from 'class-validator';
+
 
 export class UpdateBlogDto {
-  @ApiPropertyOptional({ example: 1 })
-  serialNo?: number;
 
   @ApiPropertyOptional()
   title?: string;
@@ -33,4 +34,15 @@ export class UpdateBlogDto {
 
   @ApiPropertyOptional({ example: false })
   isFeatured?: boolean;
+}
+
+export class ReorderBlogDto {
+  @ApiProperty({
+    type: [String],
+    example: ['blogId1', 'blogId2', 'blogId3'],
+    description: 'Ordered blog IDs (first = top)',
+  })
+  @IsArray()
+  @IsUUID('all', { each: true })
+  ids: string[];
 }

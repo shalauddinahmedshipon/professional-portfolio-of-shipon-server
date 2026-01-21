@@ -19,7 +19,7 @@ import sendResponse from '../utils/sendResponse';
 import { BlogService } from './blog.service';
 import { CloudinaryService } from 'src/common/cloudinary/cloudinary.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
-import { UpdateBlogDto } from './dto/update-blog.dto';
+import { ReorderBlogDto, UpdateBlogDto } from './dto/update-blog.dto';
 import { GetBlogsQueryDto } from './dto/get-blogs.dto';
 import { Public } from 'src/common/decorators/public.decorators';
 
@@ -63,6 +63,23 @@ export class BlogController {
    data: blog,
   });
  }
+
+
+
+
+@Patch('reorder')
+@ApiOperation({ summary: 'Reorder blogs' })
+async reorder(@Body() dto: ReorderBlogDto, @Res() res: Response) {
+  await this.blogService.reorderBlogs(dto.ids);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Blogs reordered successfully',
+    data: null,
+  });
+}
+
 
  @Patch(':id')
  @ApiOperation({ summary: 'Update blog' })

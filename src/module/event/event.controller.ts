@@ -90,6 +90,7 @@ export class EventController {
       ...body,
       eventDate: body.eventDate ? new Date(body.eventDate) : undefined,
       isActive: body.isActive === 'true' || body.isActive === true,
+      isFavorite:body.isFavorite === true || body.isFavorite === 'true',
     };
 
     const event = await this.eventService.update(id, dto, uploadedUrls);

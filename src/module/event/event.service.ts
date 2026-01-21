@@ -28,6 +28,7 @@ export class EventService {
       data: {
         ...dto,
         serialNo: nextSerial,
+        isFavorite: false,
         images,
       },
     });
@@ -66,6 +67,7 @@ export class EventService {
         eventType: dto.eventType,
         isActive: dto.isActive,
         images: imagesToSave,
+        isFavorite: dto.isFavorite,
       },
     });
   }

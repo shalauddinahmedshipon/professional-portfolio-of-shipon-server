@@ -13,47 +13,29 @@ export class BlogService {
   ) {}
 
   // ---------- CREATE ----------
-  async create(dto: CreateBlogDto, coverImageUrl?: string) {
-    // Duplicate serialNo check
-    if (dto.serialNo !== undefined) {
-      const exists = await this.prisma.blog.findUnique({
-        where: { serialNo: dto.serialNo },
-      });
-      if (exists) {
-        throw new BadRequestException(
-          `Blog with serialNo ${dto.serialNo} already exists`,
-        );
-      }
-    }
+async create(dto: CreateBlogDto, coverImageUrl?: string) {
+  // Auto-generate serialNo based on last blog
+  const last = await this.prisma.blog.findFirst({
+    orderBy: { serialNo: 'desc' },
+    select: { serialNo: true },
+  });
+  const nextSerial = last ? last.serialNo + 1 : 1;
 
-    return this.prisma.blog.create({
-      data: {
-        serialNo: dto.serialNo,
-        title: dto.title,
-        content: dto.content,
-        category: dto.category,
-        tags: dto.tags,
-        coverImage: coverImageUrl || null,
-      },
-    });
-  }
+  return this.prisma.blog.create({
+    data: {
+      ...dto,
+      serialNo: nextSerial,
+      coverImage: coverImageUrl || null,
+    },
+  });
+}
+
 
   // ---------- UPDATE ----------
   async update(id: string, dto: UpdateBlogDto, newCoverUrl?: string) {
     const existing = await this.prisma.blog.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Blog not found');
-
-    // Check duplicate serialNo if updating
-    if (dto.serialNo !== undefined && dto.serialNo !== existing.serialNo) {
-      const serialExists = await this.prisma.blog.findUnique({
-        where: { serialNo: dto.serialNo },
-      });
-      if (serialExists) {
-        throw new BadRequestException(
-          `Blog with serialNo ${dto.serialNo} already exists`,
-        );
-      }
-    }
+    
 
     // Replace cover image if new uploaded
     if (newCoverUrl) {
@@ -66,7 +48,6 @@ export class BlogService {
     return this.prisma.blog.update({
       where: { id },
       data: {
-        serialNo: dto.serialNo,
         title: dto.title,
         content: dto.content,
         category: dto.category,
@@ -98,40 +79,86 @@ export class BlogService {
   }
 
   // ---------- GET ALL ----------
-  async getAllBlogs(query: GetBlogsQueryDto) {
-    const { page = 1, limit = 9, search, category, isActive, isFeatured } = query;
+async getAllBlogs(query: GetBlogsQueryDto) {
+  const { page = 1, limit = 10, search, category, isActive, isFeatured } = query;
 
-    const skip = (page - 1) * limit;
-    const where: any = {};
+  const skip = (page - 1) * limit;
+  const where: any = {};
 
-    if (search) {
-      where.OR = [
-        { title: { contains: search, mode: 'insensitive' } },
-        { content: { contains: search, mode: 'insensitive' } },
-        { tags: { has: search.toLowerCase() } },
-      ];
-    }
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: 'insensitive' } },
+      { content: { contains: search, mode: 'insensitive' } },
+      { tags: { has: search.toLowerCase() } },
+    ];
+  }
 
-    if (category) where.category = category;
-    if (typeof isActive === 'boolean') where.isActive = isActive;
-    if (typeof isFeatured === 'boolean') where.isFeatured = isFeatured;
+  if (category) where.category = category;
+  if (typeof isActive === 'boolean') where.isActive = isActive;
+  if (typeof isFeatured === 'boolean') where.isFeatured = isFeatured;
 
-    const [data, total] = await Promise.all([
-      this.prisma.blog.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
-      }),
-      this.prisma.blog.count({ where }),
-    ]);
+  const [data, total] = await Promise.all([
+    this.prisma.blog.findMany({
+      where,
+      skip,
+      take: limit,
+      orderBy: { serialNo: 'asc' }, // ✅ order by serialNo like projects
+    }),
+    this.prisma.blog.count({ where }),
+  ]);
 
-    return {
-      total,
+  return {
+    data,
+    meta: {
       page,
       limit,
+      total,
       totalPages: Math.ceil(total / limit),
-      data,
-    };
+    },
+  };
+}
+
+
+
+async reorderBlogs(ids: string[]) {
+  const count = await this.prisma.blog.count({
+    where: { id: { in: ids } },
+  });
+
+  if (count !== ids.length) {
+    throw new BadRequestException('Invalid blog id found');
   }
+
+  await this.prisma.$transaction(async (tx) => {
+    // 1️⃣ Assign temporary negative serialNos
+    await Promise.all(
+      ids.map((id, index) =>
+        tx.blog.update({
+          where: { id },
+          data: { serialNo: -(index + 1) },
+        }),
+      ),
+    );
+
+    // 2️⃣ Assign correct serialNos
+    await Promise.all(
+      ids.map((id, index) =>
+        tx.blog.update({
+          where: { id },
+          data: { serialNo: index + 1 },
+        }),
+      ),
+    );
+  });
+
+  return { success: true };
+}
+
+
+
+
+
+
+
+
 }

@@ -1,8 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateBlogDto {
-  @ApiProperty({ example: 1 })
-  serialNo: number;
+
 
   @ApiProperty({ example: 'Understanding NestJS Middleware' })
   title: string;

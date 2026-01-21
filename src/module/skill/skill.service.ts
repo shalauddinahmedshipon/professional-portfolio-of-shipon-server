@@ -133,9 +133,9 @@ async createCategory(data: CreateSkillCategoryDto) {
     }
 
     // Delete old icon if new one uploaded
-    if (dto.icon) {
-      await this.cloudinaryService.deleteImageByUrl(skill.icon);
-    }
+   if (dto.icon && skill.icon) {
+  await this.cloudinaryService.deleteImageByUrl(skill.icon);
+}
 
     return this.prisma.skill.update({
       where: { id },
@@ -147,7 +147,9 @@ async createCategory(data: CreateSkillCategoryDto) {
     const skill = await this.prisma.skill.findUnique({ where: { id } });
     if (!skill) throw new NotFoundException('Skill not found');
 
+     if (skill.icon) {
     await this.cloudinaryService.deleteImageByUrl(skill.icon);
+  }
 
     return this.prisma.skill.delete({ where: { id } });
   }
@@ -180,7 +182,9 @@ async createCategory(data: CreateSkillCategoryDto) {
 
     // delete all skill icons from Cloudinary
     for (const skill of category.skills) {
-      await this.cloudinaryService.deleteImageByUrl(skill.icon);
+      if (skill.icon) {
+       await this.cloudinaryService.deleteImageByUrl(skill.icon);
+  }
     }
 
     // delete category (skills auto-deleted because of onDelete: Cascade)

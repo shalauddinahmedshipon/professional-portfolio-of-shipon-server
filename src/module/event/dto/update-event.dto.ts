@@ -4,9 +4,6 @@ import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateEventDto {
   @ApiProperty({ required: false })
-  serialNo?: number;
-
-  @ApiProperty({ required: false })
   name?: string;
 
   @ApiProperty({ required: false })
@@ -38,6 +35,13 @@ export class UpdateEventDto {
     required: false,
     description: 'Existing image URLs to remove',
   })
+
+   @ApiProperty({ required: false })
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  isFavorite?: boolean
+  
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
