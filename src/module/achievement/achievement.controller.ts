@@ -94,6 +94,24 @@ export class AchievementController {
     });
   }
 
+
+  @Patch('reorder')
+@ApiOperation({ summary: 'Reorder achievements' })
+async reorder(
+  @Body('ids') ids: string[],
+  @Res() res: Response,
+) {
+  await this.achievementService.reorderAchievements(ids);
+
+  return sendResponse(res, {
+    statusCode: HttpStatus.OK,
+    success: true,
+    message: 'Order updated',
+    data:null
+  });
+}
+
+
   /* UPDATE WITH OPTIONAL ICON */
   @Patch(':id')
   @UseInterceptors(FileInterceptor('icon'))

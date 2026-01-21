@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Achievement" ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN     "isFeatured" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "order" INTEGER NOT NULL DEFAULT 0;

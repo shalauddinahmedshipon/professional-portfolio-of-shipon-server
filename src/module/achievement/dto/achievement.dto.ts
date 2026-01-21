@@ -1,6 +1,6 @@
 import { IsString, IsOptional, IsUrl, IsDateString } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+
 
 /* -------------------- CREATE -------------------- */
 export class CreateAchievementDto {
@@ -48,8 +48,15 @@ export class CreateAchievementDto {
     description: 'Date when the achievement was earned (YYYY-MM-DD)',
   })
   @IsOptional()
-  @IsString()
+ @IsDateString()
   achievedAt?: string;
+
+   /* NEW */
+  @IsOptional()
+  isFeatured?: boolean;
+
+  @IsOptional()
+  isActive?: boolean;
 }
 
 /* -------------------- UPDATE -------------------- */

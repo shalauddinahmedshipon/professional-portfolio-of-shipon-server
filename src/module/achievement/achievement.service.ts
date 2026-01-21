@@ -6,19 +6,30 @@ import { CreateAchievementDto, UpdateAchievementDto } from './dto/achievement.dt
 export class AchievementService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /* CREATE */
-  async createAchievement(dto: CreateAchievementDto) {
-    return this.prisma.achievement.create({
-      data: {...dto,achievedAt:dto.achievedAt?new Date(dto?.achievedAt):undefined}
-    });
-  }
+async createAchievement(dto: CreateAchievementDto) {
+  const last = await this.prisma.achievement.findFirst({
+    orderBy: { order: 'desc' },
+    select: { order: true },
+  });
+
+  return this.prisma.achievement.create({
+    data: {
+      ...dto,
+      order: last ? last.order + 1 : 1,
+      achievedAt: dto.achievedAt
+        ? new Date(dto.achievedAt)
+        : undefined,
+    },
+  });
+}
+
 
   /* GET ALL */
-  async getAllAchievements() {
-    return this.prisma.achievement.findMany({
-      orderBy: { achievedAt: 'desc' },
-    });
-  }
+async getAllAchievements() {
+  return this.prisma.achievement.findMany({
+    orderBy: { order: 'asc' },
+  });
+}
 
   /* GET SINGLE */
   async getAchievementById(id: string) {
@@ -33,7 +44,12 @@ export class AchievementService {
   async updateAchievement(id: string, dto: UpdateAchievementDto) {
     const achievement = await this.prisma.achievement.findUnique({ where: { id } });
     if (!achievement) throw new NotFoundException('Achievement not found');
-
+if (typeof dto.isFeatured === 'string') {
+    dto.isFeatured = (dto.isFeatured === 'true');
+  }
+  if (typeof dto.isActive === 'string') {
+    dto.isActive = (dto.isActive === 'false' ? false : dto.isActive === 'true' ? true : dto.isActive);
+  }
     return this.prisma.achievement.update({
       where: { id },
       data: {...dto,achievedAt:dto.achievedAt?new Date(dto?.achievedAt):undefined},
@@ -47,4 +63,23 @@ export class AchievementService {
 
     return this.prisma.achievement.delete({ where: { id } });
   }
+
+
+
+async reorderAchievements(ids: string[]) {
+  await this.prisma.$transaction(
+    ids.map((id, index) =>
+      this.prisma.achievement.update({
+        where: { id },
+        data: { order: index + 1 },
+      }),
+    ),
+  );
+
+  return true;
+}
+
+
+
+
 }
